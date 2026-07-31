@@ -56,6 +56,7 @@ export default function MenuPage() {
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [expandedGalleryIndex, setExpandedGalleryIndex] = useState<number | null>(null);
   const [touchStart, setTouchStart] = useState(0);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -139,6 +140,44 @@ export default function MenuPage() {
     return () => window.removeEventListener('keydown', handleGalleryKeyDown);
   }, [expandedGalleryIndex, galleryImages.length]);
 
+  // Intersection Observer for scroll animations on gallery items
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+          }
+        });
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px',
+      }
+    );
+
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    galleryItems.forEach((item) => observer.observe(item));
+
+    return () => {
+      galleryItems.forEach((item) => observer.unobserve(item));
+    };
+  }, [galleryImages]);
+
+  // Scroll-to-top button visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollToTop(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleGalleryTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.touches[0].clientX);
   };
@@ -156,15 +195,6 @@ export default function MenuPage() {
       setExpandedGalleryIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
     }
   };
-
-  if (loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#faf8f3' }}>
-        <div style={{ width: '50px', height: '50px', border: '4px solid #e0e0e0', borderTop: '4px solid #3d6871', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-        <p style={{ marginTop: '2rem', color: '#964146', fontSize: '1rem' }}>Cargando menú...</p>
-      </div>
-    );
-  }
 
   // Group items by category
   const itemsByCategory = categories.reduce((acc, cat) => {
@@ -260,22 +290,58 @@ export default function MenuPage() {
             transform: translateY(0);
           }
         }
-        .gallery-item {
-          animation: slideUp 0.6s ease-out forwards;
+        @keyframes scrollSlideUp {
+          from {
+            opacity: 0;
+            transform: translateY(40px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
-        .gallery-item:nth-child(1) { animation-delay: 0.05s; }
-        .gallery-item:nth-child(2) { animation-delay: 0.1s; }
-        .gallery-item:nth-child(3) { animation-delay: 0.15s; }
-        .gallery-item:nth-child(4) { animation-delay: 0.2s; }
-        .gallery-item:nth-child(5) { animation-delay: 0.25s; }
-        .gallery-item:nth-child(6) { animation-delay: 0.3s; }
-        .gallery-item:nth-child(n+7) { animation-delay: 0.35s; }
+        .gallery-item {
+          position: relative;
+          cursor: pointer;
+          opacity: 0;
+          transform: translateY(40px);
+          transition: all 0.3s ease;
+        }
+        .gallery-item.in-view {
+          animation: scrollSlideUp 0.6s ease-out forwards;
+        }
+        .gallery-item.in-view:nth-child(1) { animation-delay: 0.05s; }
+        .gallery-item.in-view:nth-child(2) { animation-delay: 0.1s; }
+        .gallery-item.in-view:nth-child(3) { animation-delay: 0.15s; }
+        .gallery-item.in-view:nth-child(4) { animation-delay: 0.2s; }
+        .gallery-item.in-view:nth-child(5) { animation-delay: 0.25s; }
+        .gallery-item.in-view:nth-child(6) { animation-delay: 0.3s; }
+        .gallery-item.in-view:nth-child(n+7) { animation-delay: 0.35s; }
         .gallery-item:hover {
           transform: scale(1.05);
           transition: transform 0.3s ease;
         }
         .gallery-close-button:hover {
           background-color: rgba(0, 0, 0, 0.9);
+        }
+        .gallery-item:hover {
+          transform: translateY(0) scale(1.08);
+          box-shadow: 0 0 30px rgba(61, 104, 113, 0.6);
+        }
+        .gallery-item::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0);
+          border-radius: 12px;
+          transition: background-color 0.3s ease;
+          pointer-events: none;
+        }
+        .gallery-item:hover::after {
+          background-color: rgba(0, 0, 0, 0.25);
         }
         .gallery-prev-button:hover,
         .gallery-next-button:hover {
@@ -288,11 +354,32 @@ export default function MenuPage() {
             padding: 0.3rem 0.6rem;
           }
         }
+        @media (max-width: 768px) {
+          .items-list {
+            grid-template-columns: 1fr !important;
+          }
+        }
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
+        .scroll-to-top:hover {
+          transform: scale(1.1);
+        }
+        @media (max-width: 768px) {
+          .scroll-to-top {
+            display: none !important;
+          }
+        }
       `}</style>
+      
+      {loading ? (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '50px', height: '50px', border: '4px solid #e0e0e0', borderTop: '4px solid #3d6871', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+          <p style={{ marginTop: '2rem', color: '#964146', fontSize: '1rem' }}>Cargando menú...</p>
+        </div>
+      ) : (
+        <>
       {/* HEADER */}
       <header style={styles.header} className="header">
         <div style={styles.headerContent}>
@@ -409,23 +496,22 @@ export default function MenuPage() {
                   <p style={styles.categorySubtitle}>{category.subtitle}</p>
                 )}
 
-                <div style={styles.itemsList}>
+                <div style={styles.itemsList} className="items-list">
                   {categoryItems.map((item) => (
                     <div key={item.id} style={styles.itemCard}>
                       <div style={styles.itemHeader}>
                         <h3 style={styles.itemName}>{item.name}</h3>
+                        <div style={styles.itemBadges}>
+                          {item.is_vegetarian && <span style={styles.badge}>🌿</span>}
+                          {item.is_spicy && <span style={styles.badge}>🌶</span>}
+                          {item.is_specialty && <span style={styles.badge}>★</span>}
+                        </div>
                         <span style={styles.itemPrice}>${item.price}</span>
                       </div>
 
                       {item.description && (
                         <p style={styles.itemDescription}>{item.description}</p>
                       )}
-
-                      <div style={styles.itemBadges}>
-                        {item.is_vegetarian && <span style={styles.badge}>🌿</span>}
-                        {item.is_spicy && <span style={styles.badge}>🌶</span>}
-                        {item.is_specialty && <span style={styles.badge}>★</span>}
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -696,6 +782,27 @@ export default function MenuPage() {
           </div>
         </div>
       )}
+        </>
+      )}
+
+      {/* SCROLL TO TOP BUTTON */}
+      {showScrollToTop && (
+        <button
+          onClick={scrollToTop}
+          style={styles.scrollToTopButton}
+          className="scroll-to-top"
+          aria-label="Arriba"
+          title="Arriba"
+        >
+          <Image
+            src="/images/up-arrow.png"
+            alt="Arriba"
+            width={100}
+            height={100}
+            style={{ width: '100px', height: '100px' }}
+          />
+        </button>
+      )}
     </div>
   );
 }
@@ -833,6 +940,7 @@ const styles = {
   },
   itemsList: {
     display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
     gap: '1rem',
   },
   itemCard: {
@@ -870,8 +978,8 @@ const styles = {
   },
   itemBadges: {
     display: 'flex',
-    gap: '0.5rem',
-    marginTop: '0.75rem',
+    gap: '0.25rem',
+    alignItems: 'center',
   },
   badge: {
     fontSize: '1.1rem',
@@ -1132,5 +1240,18 @@ const styles = {
     transition: 'background-color 0.3s',
     zIndex: 10000,
     lineHeight: 1,
+  },
+  scrollToTopButton: {
+    position: 'fixed' as const,
+    bottom: '2rem',
+    right: '2rem',
+    width: '100px',
+    height: '100px',
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    zIndex: 999,
+    transition: 'transform 0.3s ease',
   },
 };
