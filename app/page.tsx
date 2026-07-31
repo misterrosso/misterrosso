@@ -160,17 +160,7 @@ export default function MenuPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#faf8f3' }}>
-        <div className="sk-cube-grid">
-          <div className="sk-cube sk-cube1"></div>
-          <div className="sk-cube sk-cube2"></div>
-          <div className="sk-cube sk-cube3"></div>
-          <div className="sk-cube sk-cube4"></div>
-          <div className="sk-cube sk-cube5"></div>
-          <div className="sk-cube sk-cube6"></div>
-          <div className="sk-cube sk-cube7"></div>
-          <div className="sk-cube sk-cube8"></div>
-          <div className="sk-cube sk-cube9"></div>
-        </div>
+        <div style={{ width: '50px', height: '50px', border: '4px solid #e0e0e0', borderTop: '4px solid #3d6871', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
         <p style={{ marginTop: '2rem', color: '#964146', fontSize: '1rem' }}>Cargando menú...</p>
       </div>
     );
@@ -298,34 +288,9 @@ export default function MenuPage() {
             padding: 0.3rem 0.6rem;
           }
         }
-        .sk-cube-grid {
-          width: 40px;
-          height: 40px;
-          margin: 100px auto;
-        }
-        .sk-cube-grid .sk-cube {
-          width: 33%;
-          height: 33%;
-          background-color: #3d6871;
-          float: left;
-          animation: sk-cubeGridScaleDelay 1.3s infinite ease-in-out;
-        }
-        .sk-cube-grid .sk-cube1 { animation-delay: 0.2s; }
-        .sk-cube-grid .sk-cube2 { animation-delay: 0.3s; }
-        .sk-cube-grid .sk-cube3 { animation-delay: 0.4s; }
-        .sk-cube-grid .sk-cube4 { animation-delay: 0.1s; }
-        .sk-cube-grid .sk-cube5 { animation-delay: 0.2s; }
-        .sk-cube-grid .sk-cube6 { animation-delay: 0.3s; }
-        .sk-cube-grid .sk-cube7 { animation-delay: 0s; }
-        .sk-cube-grid .sk-cube8 { animation-delay: 0.1s; }
-        .sk-cube-grid .sk-cube9 { animation-delay: 0.2s; }
-        @keyframes sk-cubeGridScaleDelay {
-          0%, 70%, 100% {
-            transform: scale3D(1, 1, 1);
-          }
-          35% {
-            transform: scale3D(0, 0, 1);
-          }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
       {/* HEADER */}
@@ -469,15 +434,32 @@ export default function MenuPage() {
           })}
         </div>
 
-        {/* Decorative image at bottom of menu */}
+        {/* Uber Eats CTA */}
         <div style={styles.menuDecoration}>
-          <Image
-            src="/images/bao.png"
-            alt="Bao"
-            width={150}
-            height={150}
-            style={{ maxWidth: '100%', height: 'auto' }}
-          />
+          <a
+            href="https://www.ubereats.com/store/mister-rosso-kitchenette/u8sh73tKXB-IZXA1M8dTUA"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'inline-block', cursor: 'pointer', transition: 'opacity 0.3s' }}
+          >
+            <Image
+              src="/images/uber_eats_pig.png"
+              alt="Uber Eats"
+              width={200}
+              height={240}
+              style={{ maxWidth: '100%', height: 'auto' }}
+            />
+          </a>
+          <div style={{ marginTop: '1.5rem' }}>
+            <a
+              href="https://www.ubereats.com/store/mister-rosso-kitchenette/u8sh73tKXB-IZXA1M8dTUA"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.ctaButton}
+            >
+              Encuéntranos en Uber Eats
+            </a>
+          </div>
         </div>
       </section>
 
@@ -667,13 +649,26 @@ export default function MenuPage() {
           <Image
             src="/images/black_pig_icon.png"
             alt="Pig"
-            width={120}
-            height={90}
+            width={150}
+            height={113}
             style={{ maxWidth: '100%', height: 'auto' }}
           />
         </div>
         <p style={styles.footerText}>Mister Rosso Kitchenette</p>
         <p style={styles.footerSubtext}>Querétaro, México</p>
+        <p style={{ fontSize: '0.85rem', color: '#999', margin: '1rem 0 0 0' }}>
+          Desarrollado con orgullo por{' '}
+          <a
+            href="https://wolfpackdesigns.net/es/index.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#f0bd50', textDecoration: 'none', transition: 'opacity 0.3s' }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+          >
+            Wolfpack Designs
+          </a>
+        </p>
       </footer>
 
       {/* POSTER MODAL */}
