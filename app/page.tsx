@@ -371,6 +371,13 @@ export default function MenuPage() {
         .scroll-to-top:hover {
           transform: scale(1.1);
         }
+        @media (max-width: 768px) {
+          .scroll-to-top {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+          }
+        }
       `}</style>
       
       {loading ? (
