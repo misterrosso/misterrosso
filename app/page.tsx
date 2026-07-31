@@ -222,16 +222,16 @@ export default function MenuPage() {
         }
         @media (max-width: 768px) {
           .main-logo-container {
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.75rem !important;
           }
           .main-logo-container img {
-            max-width: 250px;
+            max-width: 250px !important;
           }
           .header {
             padding: 1.5rem 1rem !important;
           }
           .header .social-links {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.5rem !important;
           }
         }
         @media (max-width: 768px) {
@@ -242,7 +242,17 @@ export default function MenuPage() {
         @media (max-width: 768px) {
           .info-content {
             grid-template-columns: 1fr !important;
-            gap: 1.5rem;
+            gap: 1.5rem !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .gallery-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 768px) {
+          .menu-pig-container img {
+            max-width: 200px !important;
           }
         }
         .close-button:hover {
