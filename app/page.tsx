@@ -215,6 +215,11 @@ export default function MenuPage() {
             grid-template-columns: repeat(2, 1fr) !important;
           }
         }
+        @media (max-width: 768px) {
+          .menu-pig-container img {
+            max-width: 200px;
+          }
+        }
         .close-button:hover {
           background-color: rgba(0, 0, 0, 0.8);
         }
@@ -344,7 +349,7 @@ export default function MenuPage() {
         {/* Menu Header with title and pig icon */}
         <div style={styles.menuHeader}>
           <h1 style={styles.menuTitle}>MENÚ</h1>
-          <div style={styles.menuPigContainer}>
+          <div style={styles.menuPigContainer} className="menu-pig-container">
             <Image
               src="/images/pig_icon.png"
               alt="Pig"
@@ -679,13 +684,13 @@ const styles = {
   },
   mapsLink: {
     display: 'inline-block',
-    padding: '0.65rem 1.5rem',
+    padding: '0.6rem 1.2rem',
     backgroundColor: '#f0bd50',
     color: '#000',
     textDecoration: 'none',
     borderRadius: '4px',
     fontWeight: 600,
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
     transition: 'all 0.3s',
   },
   infoTitle: {
