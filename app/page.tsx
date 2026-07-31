@@ -220,6 +220,11 @@ export default function MenuPage() {
             max-width: 200px;
           }
         }
+        @media (max-width: 768px) {
+          .info-content {
+            grid-template-columns: 1fr !important;
+          }
+        }
         .close-button:hover {
           background-color: rgba(0, 0, 0, 0.8);
         }
@@ -313,7 +318,7 @@ export default function MenuPage() {
 
       {/* HORARIOS & UBICACION */}
       <section style={styles.infoSection}>
-        <div style={styles.infoContent}>
+        <div style={styles.infoContent} className="info-content">
           <div style={styles.infoBlock}>
             <h2 style={styles.infoTitle}>HORARIOS</h2>
             <p style={styles.infoText} className="horarios-item">
