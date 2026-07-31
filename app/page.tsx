@@ -221,8 +221,28 @@ export default function MenuPage() {
           }
         }
         @media (max-width: 768px) {
+          .main-logo-container {
+            margin-bottom: 0.75rem;
+          }
+          .main-logo-container img {
+            max-width: 250px;
+          }
+          .header {
+            padding: 1.5rem 1rem !important;
+          }
+          .header .social-links {
+            margin-bottom: 0.5rem;
+          }
+        }
+        @media (max-width: 768px) {
+          .info-section {
+            padding: 1.5rem 1rem !important;
+          }
+        }
+        @media (max-width: 768px) {
           .info-content {
             grid-template-columns: 1fr !important;
+            gap: 1.5rem;
           }
         }
         .close-button:hover {
@@ -268,10 +288,10 @@ export default function MenuPage() {
         }
       `}</style>
       {/* HEADER */}
-      <header style={styles.header}>
+      <header style={styles.header} className="header">
         <div style={styles.headerContent}>
           {/* Mister Rosso Logo */}
-          <div style={styles.logoContainer}>
+          <div style={styles.logoContainer} className="main-logo-container">
             <Image
               src="/images/main_logo.png"
               alt="Mister Rosso"
@@ -283,7 +303,7 @@ export default function MenuPage() {
           </div>
 
           {/* Social Links - Using PNG icons */}
-          <div style={styles.socialLinks}>
+          <div style={styles.socialLinks} className="social-links">
             <a
               href="https://www.instagram.com/mister_rosso/"
               target="_blank"
@@ -317,7 +337,7 @@ export default function MenuPage() {
       </header>
 
       {/* HORARIOS & UBICACION */}
-      <section style={styles.infoSection}>
+      <section style={styles.infoSection} className="info-section">
         <div style={styles.infoContent} className="info-content">
           <div style={styles.infoBlock}>
             <h2 style={styles.infoTitle}>HORARIOS</h2>
