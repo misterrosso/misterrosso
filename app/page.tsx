@@ -487,7 +487,7 @@ export default function MenuPage() {
                   <p style={styles.eventDate} suppressHydrationWarning>
                     {(() => {
                       const [year, month, day] = event.date.split('-');
-                      const localDate = new Date(year, month - 1, day);
+                      const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
                       return localDate.toLocaleDateString('es-MX', {
                         weekday: 'long',
                         year: 'numeric',
