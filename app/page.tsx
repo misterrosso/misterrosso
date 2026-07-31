@@ -167,7 +167,12 @@ export default function MenuPage() {
   // Scroll-to-top button visibility
   useEffect(() => {
     const handleScroll = () => {
-      setShowScrollToTop(window.scrollY > 300);
+      // Only show button on desktop (> 768px)
+      if (window.innerWidth > 768) {
+        setShowScrollToTop(window.scrollY > 300);
+      } else {
+        setShowScrollToTop(false);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -365,11 +370,6 @@ export default function MenuPage() {
         }
         .scroll-to-top:hover {
           transform: scale(1.1);
-        }
-        @media (max-width: 768px) {
-          .scroll-to-top {
-            display: none !important;
-          }
         }
       `}</style>
       
