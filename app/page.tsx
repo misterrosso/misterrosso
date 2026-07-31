@@ -80,7 +80,7 @@ export default function MenuPage() {
           .from('events')
           .select('*')
           .eq('status', 'published')
-          .order('order', { ascending: true });
+          .order('date', { ascending: true });
 
         setCategories(catData || []);
         setItems(itemData || []);
@@ -183,27 +183,18 @@ export default function MenuPage() {
           color: #f0bd50;
         }
         .event-image-container {
-          display: flex;
-          justify-content: center;
+          display: block;
           margin-bottom: 1rem;
           border-radius: 6px;
           cursor: pointer;
+          transition: opacity 0.3s;
         }
-        .event-image-container:hover img {
+        .event-image-container:hover {
           opacity: 0.9;
-          transform: scale(1.02);
         }
         .event-image-container img {
-          width: 300px;
-          height: auto;
           transition: opacity 0.3s, transform 0.3s;
           border-radius: 8px;
-        }
-        @media (max-width: 768px) {
-          .event-image-container img {
-            width: 100%;
-            max-width: 280px;
-          }
         }
         @media (max-width: 768px) {
           .horarios-item span {
@@ -472,15 +463,20 @@ export default function MenuPage() {
                 {event.poster_image_url && (
                   <div
                     className="event-image-container"
-                    style={styles.eventImageContainer}
+                    style={{
+                      ...styles.eventImageContainer,
+                      position: 'relative',
+                      width: '100%',
+                      paddingBottom: '135%', // 200x270 aspect ratio
+                      overflow: 'hidden',
+                    }}
                     onClick={() => setExpandedPoster(event.poster_image_url)}
                   >
                     <Image
                       src={event.poster_image_url}
                       alt={event.title}
-                      width={200}
-                      height={270}
-                      style={{ borderRadius: '8px', cursor: 'pointer' }}
+                      fill
+                      style={{ objectFit: 'cover', cursor: 'pointer' }}
                     />
                   </div>
                 )}
@@ -488,13 +484,17 @@ export default function MenuPage() {
                 <h3 style={styles.eventTitle}>{event.title}</h3>
 
                 {event.date && (
-                  <p style={styles.eventDate}>
-                    {new Date(event.date).toLocaleDateString('es-MX', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
+                  <p style={styles.eventDate} suppressHydrationWarning>
+                    {(() => {
+                      const [year, month, day] = event.date.split('-');
+                      const localDate = new Date(year, month - 1, day);
+                      return localDate.toLocaleDateString('es-MX', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      });
+                    })()}
                   </p>
                 )}
 
@@ -881,7 +881,6 @@ const styles = {
   eventImageContainer: {
     marginBottom: '1rem',
     borderRadius: '6px',
-    textAlign: 'center' as const,
     cursor: 'pointer',
     transition: 'opacity 0.3s',
   },

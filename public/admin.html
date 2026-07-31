@@ -1177,7 +1177,12 @@
 
     const { error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
-      errorEl.textContent = error.message;
+      // Translate common Supabase error to Spanish
+      let errorMsg = error.message;
+      if (errorMsg.includes('Invalid login credentials')) {
+        errorMsg = 'Email o contraseña incorrectos';
+      }
+      errorEl.textContent = errorMsg;
       btn.disabled = false;
       btn.textContent = 'Iniciar sesión';
     } else {
@@ -1194,7 +1199,11 @@
     }
     sb.auth.resetPasswordForEmail(email).then(({ error }) => {
       if (error) {
-        alert('Error: ' + error.message);
+        let errorMsg = error.message;
+        if (errorMsg.includes('User not found')) {
+          errorMsg = 'Este correo no está registrado';
+        }
+        alert('Error: ' + errorMsg);
       } else {
         alert('Se ha enviado un correo con instrucciones para resetear tu contraseña.');
       }
@@ -2003,27 +2012,84 @@
     eventData.forEach(event => {
       const dateObj = new Date(event.date + 'T12:00:00');
       const dateStr = dateObj.toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' });
-      const statusBadge = event.status === 'published' ? '<span style="background: #5cb85c; color: white; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">Publicado</span>' : '<span style="background: var(--gold); color: var(--text); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem;">Borrador</span>';
+      const statusBadge = event.status === 'published' ? `<span class="status-badge" data-event-id="${event.id}" style="background: #5cb85c; color: white; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem; cursor: pointer;">Publicado</span>` : `<span class="status-badge" data-event-id="${event.id}" style="background: var(--gold); color: var(--text); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.75rem; margin-left: 0.5rem; cursor: pointer;">Borrador</span>`;
 
       const card = document.createElement('div');
       card.className = 'event-card';
+      card.setAttribute('data-event-id', event.id);
       card.innerHTML = `
-        <div class="event-header">
-          <div>
-            <div class="event-title" style="display: flex; align-items: center;">${escHtml(event.title)} ${statusBadge}</div>
-            <div class="event-date">${dateStr}</div>
+        <div class="event-view-mode">
+          <div class="event-header">
+            <div>
+              <div class="event-title" style="display: flex; align-items: center;">${escHtml(event.title)} ${statusBadge}</div>
+              <div class="event-date">${dateStr}</div>
+            </div>
+            <div class="event-actions">
+              <button class="btn-secondary" onclick="openEventEdit(${event.id})">Editar</button>
+              <button class="btn-secondary btn-danger" onclick="deleteEvent(${event.id})">Eliminar</button>
+            </div>
           </div>
-          <div class="event-actions">
-            <button class="btn-secondary" onclick="editEvent(${event.id})">Editar</button>
-            <button class="btn-secondary btn-danger" onclick="deleteEvent(${event.id})">Eliminar</button>
+          ${event.description ? `<div style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text);">${event.description}</div>` : ''}
+          ${event.button_text ? `<div style="margin-top: 0.75rem;"><a href="${event.button_url}" style="background: var(--burgundy); color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: var(--radius); display: inline-block;">${escHtml(event.button_text)}</a></div>` : ''}
+          ${event.poster_image_url ? `<div style="margin-top: 0.75rem;"><img src="${event.poster_image_url}" style="max-width: 100%; max-height: 150px; border-radius: var(--radius); object-fit: cover;"></div>` : ''}
+        </div>
+
+        <div class="event-edit-mode" style="display: none; padding: 1.5rem; background: var(--gold-dim); border-radius: var(--radius); margin-top: 1rem;">
+          <div style="display: grid; gap: 0.75rem;">
+            <div>
+              <label class="form-label">Título</label>
+              <input type="text" class="form-input event-title-input" value="${escHtml(event.title)}" placeholder="Título del evento">
+            </div>
+            <div>
+              <label class="form-label">Fecha</label>
+              <input type="date" class="form-input event-date-input" value="${event.date}">
+            </div>
+            <div>
+              <label class="form-label">Descripción</label>
+              <textarea class="form-input event-desc-input" placeholder="Descripción" style="min-height: 100px;">${stripHtml(event.description || '')}</textarea>
+            </div>
+            <div>
+              <label class="form-label">Botón (Texto)</label>
+              <input type="text" class="form-input event-button-text-input" value="${escHtml(event.button_text || '')}" placeholder="p. ej., Comprar Tickets">
+            </div>
+            <div>
+              <label class="form-label">Botón (URL)</label>
+              <input type="url" class="form-input event-button-url-input" value="${escHtml(event.button_url || '')}" placeholder="https://...">
+            </div>
+            <div>
+              <label class="form-label">Estado</label>
+              <select class="form-input event-status-input" style="padding: 0.75rem 1rem;">
+                <option value="draft" ${event.status === 'draft' ? 'selected' : ''}>Borrador</option>
+                <option value="published" ${event.status === 'published' ? 'selected' : ''}>Publicado</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Imagen del Póster</label>
+              <div style="background: white; padding: 1rem; border-radius: var(--radius); text-align: center;">
+                <button class="btn-secondary" onclick="handleEventImageSelect(${event.id})" style="margin-bottom: 0.5rem;">Seleccionar Imagen</button>
+                <div class="event-image-preview" ${event.poster_image_url ? 'style="margin-top: 0.75rem;"' : 'style="display: none; margin-top: 0.75rem;"'}>
+                  ${event.poster_image_url ? `<img src="${event.poster_image_url}" style="max-width: 100%; max-height: 120px; border-radius: var(--radius); object-fit: cover;">` : ''}
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn-submit" onclick="saveEventEdit(${event.id})">Guardar</button>
+              <button class="btn-secondary" onclick="cancelEventEdit(${event.id})">Cancelar</button>
+            </div>
           </div>
         </div>
-        ${event.description ? `<div style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text);">${event.description}</div>` : ''}
-        ${event.button_text ? `<div style="margin-top: 0.75rem;"><a href="${event.button_url}" style="background: var(--burgundy); color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: var(--radius); display: inline-block;">${escHtml(event.button_text)}</a></div>` : ''}
-        ${event.poster_image_url ? `<div style="margin-top: 0.75rem;"><img src="${event.poster_image_url}" style="max-width: 100%; max-height: 150px; border-radius: var(--radius); object-fit: cover;"></div>` : ''}
       `;
 
       container.appendChild(card);
+    });
+
+    // Add click handlers to status badges
+    document.querySelectorAll('.status-badge').forEach(badge => {
+      badge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const eventId = parseInt(badge.getAttribute('data-event-id'));
+        toggleEventStatus(eventId);
+      });
     });
   }
 
@@ -2042,7 +2108,7 @@
 
     const btn = document.getElementById('event-submit-btn');
     btn.disabled = true;
-    btn.textContent = editingEventId ? 'Actualizando...' : 'Creando...';
+    btn.textContent = 'Creando...';
 
     const payload = {
       title,
@@ -2055,15 +2121,10 @@
       order: eventData.length
     };
 
-    let err;
-    if (editingEventId) {
-      ({ error: err } = await sb.from('events').update(payload).eq('id', editingEventId));
-    } else {
-      ({ error: err } = await sb.from('events').insert(payload));
-    }
+    const { error: err } = await sb.from('events').insert(payload);
 
     btn.disabled = false;
-    btn.textContent = editingEventId ? 'Actualizar Evento' : 'Crear Evento';
+    btn.textContent = 'Crear Evento';
 
     if (!err) {
       document.getElementById('new-event-title').value = '';
@@ -2073,33 +2134,129 @@
       document.getElementById('event-button-url').value = '';
       document.getElementById('event-status').value = 'draft';
       removeEventImage();
-      editingEventId = null;
       loadEvents();
     }
   }
 
-  function editEvent(eventId) {
+  function openEventEdit(eventId) {
+    const card = document.querySelector(`[data-event-id="${eventId}"]`);
+    const viewMode = card.querySelector('.event-view-mode');
+    const editMode = card.querySelector('.event-edit-mode');
+    
+    viewMode.style.display = 'none';
+    editMode.style.display = 'block';
+  }
+
+  async function toggleEventStatus(eventId) {
     const event = eventData.find(e => e.id === eventId);
     if (!event) return;
 
-    editingEventId = eventId;
-    document.getElementById('new-event-title').value = event.title;
-    document.getElementById('new-event-date').value = event.date;
-    eventQuill.root.innerHTML = event.description || '';
-    document.getElementById('event-button-text').value = event.button_text || '';
-    document.getElementById('event-button-url').value = event.button_url || '';
-    document.getElementById('event-status').value = event.status || 'draft';
-    document.getElementById('event-submit-btn').textContent = 'Actualizar Evento';
+    const newStatus = event.status === 'published' ? 'draft' : 'published';
+    
+    const { error } = await sb.from('events').update({ status: newStatus }).eq('id', eventId);
 
-    if (event.poster_image_url) {
-      eventImageUrl = event.poster_image_url;
-      document.getElementById('event-preview-img').src = event.poster_image_url;
-      document.getElementById('event-preview').classList.add('show');
-      document.getElementById('event-upload-label').textContent = 'Haz clic para cambiar imagen';
+    if (!error) {
+      event.status = newStatus;
+      loadEvents();
+    }
+  }
+
+  function cancelEventEdit(eventId) {
+    const card = document.querySelector(`[data-event-id="${eventId}"]`);
+    const viewMode = card.querySelector('.event-view-mode');
+    const editMode = card.querySelector('.event-edit-mode');
+    
+    editMode.style.display = 'none';
+    viewMode.style.display = 'block';
+  }
+
+  async function saveEventEdit(eventId) {
+    const card = document.querySelector(`[data-event-id="${eventId}"]`);
+    const title = card.querySelector('.event-title-input').value.trim();
+    const date = card.querySelector('.event-date-input').value;
+    const desc = card.querySelector('.event-desc-input').value.trim();
+    const buttonText = card.querySelector('.event-button-text-input').value.trim() || null;
+    const buttonUrl = card.querySelector('.event-button-url-input').value.trim() || null;
+    const status = card.querySelector('.event-status-input').value;
+
+    if (!title || !date) {
+      alert('Por favor, ingresa título y fecha.');
+      return;
     }
 
-    switchTab('eventos', document.querySelector('[onclick="switchTab(\'eventos\')"]'));
-    document.querySelector('.form-group').scrollIntoView({ behavior: 'smooth' });
+    const event = eventData.find(e => e.id === eventId);
+    const posterUrl = event.posterImageUrl || event.poster_image_url;
+
+    const payload = {
+      title,
+      date,
+      description: desc ? `<p>${desc}</p>` : null,
+      button_text: buttonText,
+      button_url: buttonUrl,
+      status,
+      poster_image_url: posterUrl || null,
+    };
+
+    const { error } = await sb.from('events').update(payload).eq('id', eventId);
+
+    if (!error) {
+      loadEvents();
+    } else {
+      alert('Error al guardar: ' + error.message);
+    }
+  }
+
+  function handleEventImageSelect(eventId) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      if (e.target.files[0]) {
+        uploadEventImageToSupabase(e.target.files[0], eventId);
+      }
+    };
+    input.click();
+  }
+
+  async function uploadEventImageToSupabase(file, eventId) {
+    if (!file) return;
+
+    const card = document.querySelector(`[data-event-id="${eventId}"]`);
+    const button = card.querySelector('button');
+    const originalText = button.textContent;
+    button.textContent = 'Cargando...';
+
+    try {
+      const timestamp = Date.now();
+      const filename = `event-${timestamp}-${file.name}`;
+
+      const { data, error } = await sb.storage
+        .from('event-posters')
+        .upload(filename, file);
+
+      if (error) {
+        alert('Error: ' + error.message);
+        button.textContent = originalText;
+        return;
+      }
+
+      const { data: urlData } = sb.storage
+        .from('event-posters')
+        .getPublicUrl(filename);
+
+      if (urlData && urlData.publicUrl) {
+        const event = eventData.find(e => e.id === eventId);
+        event.posterImageUrl = urlData.publicUrl;
+
+        const preview = card.querySelector('.event-image-preview');
+        preview.style.display = 'block';
+        preview.innerHTML = `<img src="${urlData.publicUrl}" style="max-width: 100%; max-height: 120px; border-radius: var(--radius); object-fit: cover;">`;
+        button.textContent = originalText;
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+      button.textContent = originalText;
+    }
   }
 
   async function deleteEvent(eventId) {
@@ -2172,6 +2329,12 @@
   // ── UTILS ──
   function escHtml(str) {
     return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+
+  function stripHtml(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html || '';
+    return div.textContent || div.innerText || '';
   }
 </script>
 
