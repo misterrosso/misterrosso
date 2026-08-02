@@ -76,11 +76,16 @@ export default function MenuPage() {
           .order('category_id', { ascending: true })
           .order('order', { ascending: true });
 
-        // Fetch events (published only)
+        // Fetch events (published only, from today onwards in CST)
+        const todayInCST = new Date().toLocaleDateString('en-CA', { 
+          timeZone: 'America/Chicago' 
+        }); // Returns YYYY-MM-DD format
+        
         const { data: eventData } = await supabase
           .from('events')
           .select('*')
           .eq('status', 'published')
+          .gte('date', todayInCST)
           .order('date', { ascending: true });
 
         setCategories(catData || []);
