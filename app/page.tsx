@@ -96,10 +96,19 @@ export default function MenuPage() {
         
         setMenuSubtitle(settingsData?.menu_subtitle || '');
 
-        // Fetch gallery images
-        const galleryRes = await fetch('/api/gallery');
-        const galleryData = await galleryRes.json();
-        setGalleryImages(galleryData);
+        // Fetch gallery images from Supabase
+        const { data: galleryData } = await supabase
+          .from('gallery')
+          .select('*')
+          .eq('hidden', false)
+          .order('order', { ascending: true });
+
+        // Map database format to component format
+        const mappedGallery = (galleryData || []).map((img) => ({
+          src: img.image_url,
+          alt: `Mister Rosso gallery image ${img.order}`
+        }));
+        setGalleryImages(mappedGallery);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -167,8 +176,8 @@ export default function MenuPage() {
   // Scroll-to-top button visibility
   useEffect(() => {
     const handleScroll = () => {
-      // Only show button on desktop (> 768px)
-      if (window.innerWidth > 768) {
+      // Only show button on desktop (> 1140px)
+      if (window.innerWidth > 1140) {
         setShowScrollToTop(window.scrollY > 300);
       } else {
         setShowScrollToTop(false);
@@ -371,7 +380,7 @@ export default function MenuPage() {
         .scroll-to-top:hover {
           transform: scale(1.1);
         }
-        @media (max-width: 768px) {
+        @media (max-width: 1139px) {
           .scroll-to-top {
             display: none !important;
             visibility: hidden !important;
