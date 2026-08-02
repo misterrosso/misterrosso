@@ -1807,7 +1807,15 @@
     if (itemId) {
       await sb.from('items').update(payload).eq('id', itemId);
     } else {
-      const maxOrder = categoryData.find(c => c.id === catId)?.items?.length || 0;
+      // Get max order for items in this category
+      const { data: categoryItems } = await sb
+        .from('items')
+        .select('order')
+        .eq('category_id', catId)
+        .order('order', { ascending: false })
+        .limit(1);
+      
+      const maxOrder = categoryItems?.[0]?.order || 0;
       payload.category_id = catId;
       payload.order = maxOrder + 1;
       payload.hidden = false;
