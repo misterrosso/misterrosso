@@ -238,6 +238,8 @@ export default function MenuPage() {
           border-radius: 6px;
           cursor: pointer;
           transition: opacity 0.3s;
+          max-width: 300px;
+          width: 100%;
         }
         .event-image-container:hover {
           opacity: 0.9;
@@ -245,8 +247,14 @@ export default function MenuPage() {
         .event-image-container img {
           transition: opacity 0.3s, transform 0.3s;
           border-radius: 8px;
+          width: 100%;
+          height: auto;
+          display: block;
         }
         @media (max-width: 768px) {
+          .event-image-container {
+            max-width: 280px;
+          }
           .horarios-item span {
             display: block;
           }

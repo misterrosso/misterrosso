@@ -2253,7 +2253,8 @@
             </div>
             <div>
               <label class="form-label">Descripción</label>
-              <textarea class="form-input event-desc-input" placeholder="Descripción" style="min-height: 100px;">${stripHtml(event.description || '')}</textarea>
+              <div class="event-desc-quill-editor" style="background: white; border-radius: var(--radius); overflow: hidden;"></div>
+              <input type="hidden" class="event-desc-input" value="${event.description || ''}">
             </div>
             <div>
               <label class="form-label">Botón (Texto)</label>
@@ -2352,6 +2353,26 @@
     
     viewMode.style.display = 'none';
     editMode.style.display = 'block';
+    
+    // Initialize Quill editor for description
+    const descInput = card.querySelector('.event-desc-input');
+    const quillContainer = card.querySelector('.event-desc-quill-editor');
+    
+    if (quillContainer && !quillContainer.quill) {
+      const quill = new Quill(quillContainer, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'link'],
+            ['list']
+          ]
+        },
+        placeholder: 'Descripción'
+      });
+      
+      quill.root.innerHTML = descInput.value || '';
+      quillContainer.quill = quill;
+    }
   }
 
   async function toggleEventStatus(eventId) {
@@ -2372,6 +2393,13 @@
     const card = document.querySelector(`[data-event-id="${eventId}"]`);
     const viewMode = card.querySelector('.event-view-mode');
     const editMode = card.querySelector('.event-edit-mode');
+    const quillContainer = card.querySelector('.event-desc-quill-editor');
+    
+    // Clean up Quill editor
+    if (quillContainer && quillContainer.quill) {
+      quillContainer.quill = null;
+      quillContainer.innerHTML = '';
+    }
     
     editMode.style.display = 'none';
     viewMode.style.display = 'block';
@@ -2381,7 +2409,8 @@
     const card = document.querySelector(`[data-event-id="${eventId}"]`);
     const title = card.querySelector('.event-title-input').value.trim();
     const date = card.querySelector('.event-date-input').value;
-    const desc = card.querySelector('.event-desc-input').value.trim();
+    const quillContainer = card.querySelector('.event-desc-quill-editor');
+    const desc = quillContainer.quill ? quillContainer.quill.root.innerHTML : card.querySelector('.event-desc-input').value.trim();
     const buttonText = card.querySelector('.event-button-text-input').value.trim() || null;
     const buttonUrl = card.querySelector('.event-button-url-input').value.trim() || null;
     const status = card.querySelector('.event-status-input').value;
@@ -2397,7 +2426,7 @@
     const payload = {
       title,
       date,
-      description: desc ? `<p>${desc}</p>` : null,
+      description: desc ? desc : null,
       button_text: buttonText,
       button_url: buttonUrl,
       status,
